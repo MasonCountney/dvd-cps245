@@ -24,9 +24,6 @@ public class main{
     Scanner input = new Scanner(System.in);
 
     ArrayList<Customer> customers = new ArrayList<Customer>();
-    DVD dvd;
-    int counter = 0;
-
 
     /* +-------------------------------------+
      * | Reads customer file, creates list,  |
@@ -34,6 +31,8 @@ public class main{
      * +-------------------------------------+
      */
      File file = new File("CustomerList.txt");
+     DVD dvd;
+     int counter = 0;
 
      if (file.exists()) {
       if (file.isFile() && file.canRead())
