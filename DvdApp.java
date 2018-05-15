@@ -11,7 +11,7 @@ import java.io.FileNotFoundException;
  */
 public class DvdApp {
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args){
 		// TODO Auto-generated method stub
 		Scanner console = new Scanner(System.in);
 
@@ -45,103 +45,129 @@ public class DvdApp {
 
 		fillDVDs(stock, DVDFile);
 		fillCustomers(customers, cusFile);
+		sortCustomerList(customers, 0, customers.size()-1);
 
 		System.out.println("\nWelcome to The DVD Store\n");
 		printMenu();
 		while(choice == 'y') {
-			System.out.print("\n[select] % ");
+			System.out.print("\n[selection] -> ");
 			selection = console.nextInt();
 			console.nextLine();
 
 			switch(selection) {
 				case 1: //search stock for a DVD title
+				{
 					System.out.print("Please enter a title: ");
 					String tempTitle = console.nextLine();
-					if(haveDVD(tempTitle, stock)) {
-						System.out.println("We carry that title");
+					int index = searchDVDList(stock, tempTitle);
 
-						if(!stock.get(findDVD(stock, tempTitle)).isAvailable() ) {
-							System.out.println("But it is currently unavailable");
-						} else {
-							System.out.print("Sorry we dont't carry that title. ");
-						}
+					if(index == -1){
+						System.out.println("Could not find dvd: " + tempTitle);
 					} else {
-						System.out.print("Sorry we dont't carry that title. ");
+						if(stock.get(index).isAvailable()){
+							System.out.println(tempTitle + " found and available");
+						} else {
+							System.out.println(tempTitle + " found but not available");
+						}
 					}
-					break;
+
+				}	break;
+
 				case 2: //find dvd and call its checkout() method
-					System.out.print("Please enter the customer's name: ");
-					String tmpName = console.nextLine();
+				{
+					Customer temp = new Customer();
+					System.out.print(" First name: ");
+					temp.setFirstName(console.nextLine());
 
-					if(haveCustomer(tmpName, customers)) {
-						System.out.print("Please enter the title of the DVD to be checked out: ");
-						String tmpTitle = console.nextLine();
+					System.out.print(" Last name: ");
+					temp.setLastName(console.nextLine());
 
-						if(haveDVD(tmpTitle, stock)) {
-							DVD tmpDVD = stock.get(findDVD(stock, tmpTitle));
+					System.out.print(" account number: ");
+					temp.setAccountNumber(console.nextInt());
 
-							if(tmpDVD.isAvailable()) {
-								tmpDVD.checkOut();
-								customers.get(findCustomer(customers, tmpName)).rentDVD(tmpDVD);
-								System.out.println("DVD checked out successfully ");
+					int customerIndex = searchCustomerList(customers, temp);
+
+					if(customerIndex == -1){
+						System.out.println("No customer found.");
+					} else {
+						System.out.print("Enter dvd title: ");
+						int dvdIndex = searchDVDList(stock, console.nextLine());
+
+						if(dvdIndex == -1){
+							System.out.println("No DVD found.");
+						} else {
+							if(stock.get(dvdIndex).isAvailable()){
+								customers.get(customerIndex).rentDVD(stock.get(dvdIndex));
+								stock.get(dvdIndex).checkOut();
 							} else {
-								System.out.println("Sorry, DVD is currently unavailable.");
-							}
-						} else {
-								System.out.println("Error has occured. Please try again.");
+								System.out.println("Dvd is out of stock");
 							}
 						}
+					}
 
-					break;
+				}	break;
+
 				case 3: //find dvd and call its checkIn() method
-					System.out.print("Please enter the customer's name: ");
-					String name = console.nextLine();
+				{
+					Customer temp = new Customer();
+					System.out.print(" First name: ");
+					temp.setFirstName(console.nextLine());
 
-					if(haveCustomer(name, customers)) {
-						System.out.print("Please enter the DVD's title: ");
-						String title = console.nextLine();
+					System.out.print(" Last name: ");
+					temp.setLastName(console.nextLine());
 
-						if(haveDVD(title, stock)) {
-							if(returnDVD(title, name, stock, customers)) {
-								System.out.println("DVD returned successfully");
-							}	else {
-								System.out.println("Error has occured. Please try again.");
-							}
+					System.out.print(" account number: ");
+					temp.setAccountNumber(console.nextInt());
+
+					int customerIndex = searchCustomerList(customers, temp);
+
+					if(customerIndex == -1){
+						System.out.println("No customer found.");
+					} else {
+							System.out.print("Enter dvd title: ");
+							customers.get(customerIndex).returnDVD(console.nextLine());
+					}
+
+
+				}		break;
+
+				case 4:
+				{//see if a DVD is in Stock
+					System.out.print("Please enter a title: ");
+					String temp = console.nextLine();
+
+					int dvdIndex = searchDVDList(stock, temp);
+					if(dvdIndex == -1){
+						System.out.println("Dvd not found");
+					} else {
+						if(stock.get(dvdIndex).isAvailable()){
+							System.out.println("Dvd is currently available");
+							System.out.println(stock.get(dvdIndex).numberOfCopies()+ " number of copies available");
 						} else {
-							System.out.println("Error has occured. Please try again.");
-
-							}
-						} else {
-								System.out.println("Error has occured. Please try again.");
+							System.out.println("Dvd is out of stock");
 						}
+					}
 
-					break;
-				case 4: //see if a DVD is in Stock
-					System.out.println("Please enter a title.");
-					String tmpTitle2 = console.nextLine();
+				}		break;
 
-					if(haveDVD(tmpTitle2, stock)) {
-						DVD tmpDVD = stock.get(findDVD(stock, tmpTitle2));
-						if(tmpDVD.isAvailable()) {
-							System.out.println("This title is in stock");
-						} else
-							System.out.println("Sorry, this title is out of stock.");
-						} else
-							System.out.println("Error has occured. Please try again.");
-
-
-						break;
 				case 5: printTitles(stock); break;
 				case 6: printDVDs(stock); break;
 				case 7: printCustomers(customers); break;
 				case 8: //print all the rented movies of one customer
-					System.out.println("Please enter a customer's name");
-					String tmpName2 = console.nextLine();
-					if(haveCustomer(tmpName2, customers)) {
-						printRented(customers, tmpName2);
-					} else {
-						System.out.println("Sorry, that customer does not have an account here.");
-					}
+					Customer temp = new Customer();
+					System.out.print(" First name: ");
+					temp.setFirstName(console.nextLine());
+
+					System.out.print(" Last name: ");
+					temp.setLastName(console.nextLine());
+
+					System.out.print(" account number: ");
+					temp.setAccountNumber(console.nextInt());
+
+					int customerIndex = searchCustomerList(customers, temp);
+
+					customers.get(customerIndex).rented();
+
 					break;
 				case 9: //print all the rented movies
 					printAllRented(customers);
@@ -151,6 +177,7 @@ public class DvdApp {
 					System.out.println("Thank you. Good-Bye.");
 					break;
 				default: System.out.println("Entry not recognized. Please try again");
+
 			}
 		}
 	}// end main
@@ -169,58 +196,8 @@ public class DvdApp {
 		System.out.println("10: Print Menu.");
 		System.out.println("100: Exit");
 	}//end printMenu
-	/**
-	 * Checks to see if a DVD is present in the list.
-	 * @param title the title of the DVD to be searched for.
-	 * @param stock the ArrayList of all DVDs the store has.
-	 * @return true if the store has the DVD.
-	 */
-	public static boolean haveDVD(String title, ArrayList<DVD> stock) {
-		boolean has = true;
-		for(int i=0; i < stock.size(); i++){
-			if (!stock.get(i).getDVDTitle().equals(title))
-				has =  false;
-			else {
-				has =  true;
-				break;
-			}
-        }
-		return has;
-	}//end haveDvd
-	/**
-	 * Checks to see if a Customer has an account at the store.
-	 * @param name The name of the Customer to be searched for.
-	 * @param customers The ArrayList of all customers that have accounts at the store.
-	 * @return true if the customer has an account.
-	 */
-	public static boolean haveCustomer(String name, ArrayList<Customer> customers) {
-		boolean has = true;
-		for(int i=0; i < customers.size(); i++) {
-			if(!customers.get(i).getName().equals(name))
-				has = false;
-			else {
-				has = true;
-				break;
-			}
-		}
-		return has;
-	}//end haveCustomer
-	/**
-	 * Returns a DVD to the store by incrementing the number of copies by one and
-	 * removing the title from the list of rented DVDs of the customer.
-	 * @param title the title of the DVD to return.
-	 * @param name the name of the customer returning the DVD.
-	 * @param stock the ArrayList of DVDs
-	 * @param customers the ArrayList of Customers
-	 * @return true if the DVD is returned successfully.
-	 */
-	public static boolean returnDVD(String title, String name, ArrayList<DVD> stock, ArrayList<Customer> customers) {
-		int i = findDVD(stock, title);
-		stock.get(i).checkOut();
-		int j = findCustomer(customers, name);
-		customers.get(j).returnDVD(title);
-		return true;
-	}//end returnDVD
+
+
 	/**
 	 * Fills the ArrayList with DVD data from a file inputed
 	 * by the user in the main method.
@@ -250,6 +227,8 @@ public class DvdApp {
 			}
 		}
 	}//end fillDVDs
+
+
 	/**
 	 * Fills the ArrayList with Customer data from a file inputed
 	 * by the user in the main method.
@@ -275,7 +254,7 @@ public class DvdApp {
 							dvd = new DVD(temp);
 							if(!temp.equals("***")) {
 								customers.get(counter).rentDVD(dvd);
-							}else {
+							} else {
 								end = true;
 							}
 						}
@@ -286,68 +265,100 @@ public class DvdApp {
 				}
 		}
 	}
+
+
 	//printing methods
 	public static void printDVDs(ArrayList<DVD> stock) {
-		for(int i=0; i<stock.size(); ++i) {
+		for(int i=0; i < stock.size(); ++i) {
 			System.out.println(stock.get(i).getDVDInfo());
 		}
 	}//end printDVDs
+
+
 	public static void printTitles(ArrayList<DVD> stock) {
 		String titles = "";
-		for(int i =0; i<stock.size(); ++i) {
+		for(int i =0; i < stock.size(); ++i) {
 			titles += (stock.get(i).getDVDTitle() + "\n");
 		}
 		System.out.println(titles);
 	}//end printTitles
+
+
 	public static void printCustomers(ArrayList<Customer> customers) {
-		for(int i=0; i<customers.size(); ++i) {
+		for(int i=0; i < customers.size(); ++i) {
 			System.out.println(customers.get(i));
 		}
 	}//end printCustomers
-	public static void printRented(ArrayList<Customer> customers, String name) {
-		int i = findCustomer(customers, name);
-		System.out.println(customers.get(i).rented());
-	}//end printRented
+
+
 	public static void printAllRented(ArrayList<Customer> customers) {
 		for(int i=0; i<customers.size(); ++i) {
 			System.out.println("-----" + customers.get(i).getName() + ":");
 			System.out.println(customers.get(i).rented());
 		}
 	}//end printAllRented
-	/**
-	 * Finds the index of a DVD in the ArrayList.
-	 * @param stock the ArrayList of DVDs.
-	 * @param title the title of the DVD whose index you need.
-	 * @return the index of the DVD in the ArrayList.
-	 */
-	public static int findDVD(ArrayList<DVD> stock, String title) {
-		int index = -1;
-		if(haveDVD(title, stock)) {
-			for(int i =0; i < stock.size(); ++i)
-				if(stock.get(i).title.equals(title)) {
-					index = i;
-					break;
-				}
-		}
-		else { index = -1;}
-		return index;
-	}//end findDVD
+
+
 	/**
 	 * Finds the index of a Customer in the ArrayList.
 	 * @param customers the ArrayList of Customers.
 	 * @param name the name of the customer whose index you need.
 	 * @return the index of the Customer in the ArrayList.
 	 */
-	public static int findCustomer(ArrayList<Customer> customers, String name) {
-		int index = -1;
-		if(haveCustomer(name, customers)) {
-			for(int i = 0; i < customers.size(); ++i)
-				if(customers.get(i).getName().equals(name)) {
-					index = i;
-					break;
-				}
-		}
-		else index = -1;
-		return index;
-	}//end findCustomer
+	 public static int searchCustomerList(ArrayList<Customer> list, Customer key){
+	 	int low = 0;
+	 	int high = list.size() - 1;
+	 	int mid;
+
+	 	while (low <= high) {
+	 			mid = (low + high) / 2;
+	 			if (list.get(mid).compareTo(key) > 0)
+	 					high = mid - 1;
+	 			else if (list.get(mid).compareTo(key) < 0)
+	 					low = mid + 1;
+	 			else
+	 					return mid;
+	 	}
+	 	return -1;
+	} // end searchCustomerList()
+
+
+	public static void sortCustomerList(ArrayList<Customer> list, int start, int end){
+
+    int i = start;
+    int j = end;
+    Customer pivot = new Customer();
+    pivot = list.get(i + (j-i)/2);
+
+    while (i <= j) {
+      while (list.get(i).compareTo(pivot) < 0)
+        ++i;
+      while (list.get(j).compareTo(pivot) > 0)
+        --j;
+
+      if (i <= j) {
+        Collections.swap(list, i, j);
+        ++i;
+        --j;
+      }
+    }
+
+    if (start < j)
+      sortCustomerList(list, start, j);
+    if (i < end)
+      sortCustomerList(list, i, end);
+    } // end sortCustomerList()
+
+
+		public static int searchDVDList(ArrayList<DVD> stock, String key){
+
+			for(int i = 0; i < stock.size(); ++i){
+				stock.get(i).getDVDTitle().equals(key);
+				return i;
+			}
+
+		 return -1;
+	 } // end searchDVDList()
+
+
 }//end class
